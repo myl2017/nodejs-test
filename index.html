@@ -1,0 +1,77 @@
+<meta charset="UTF-8">
+<title>JS发送Ajax请求</title>
+<style>
+    input.error + span.errorMessage{ color: red;}
+    ul{ list-style: none;}
+</style>
+<form id="loginForm" action="login" method="GET">
+    <div>
+        <label for="username">姓名</label>
+        <input id="username" name="username" type="text" class="error"/>
+        <span class="errorMessage"></span>
+    </div>
+    <div>
+        <label>
+            密码 <input id="password" name="password" type="password" class="error">
+            <span class="errorMessage"></span>
+        </label>
+    </div>
+    <div>
+        <input type="submit"/>
+    </div>
+</form>
+<div>
+    登录提示：
+    <ul>
+        <li>用户名：myl</li>
+        <li>密&nbsp;&nbsp;&nbsp;码：123456</li>
+    </ul>
+</div>
+<script src="//apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script >
+    loginForm.addEventListener('submit',function (e) {
+        e.preventDefault(); //阻止默认事件
+        //获取用户名、密码
+        var username = loginForm.username.value;
+        var password = loginForm.password.value;
+        var valid = true
+        $('input.error').removeClass('error')
+
+        if($.trim(username) === ''){
+            $('input[name="username"]').addClass('error')
+                .next('.errorMessage').text('用户名不能为空')
+            valid = false
+        }
+        if(password === ''){
+            $('input[name="password"]').addClass('error')
+                .next('.errorMessage').text('密码不能为空')
+            valid = false
+        }
+        if(valid === false){ return }
+
+        //创建一个XMLHttpRequest对象
+        var request = new XMLHttpRequest();
+        request.onreadystatechange = function () {
+            if(request.readyState === 4){   //响应下载完毕
+                if(request.status >= 400){  //错误处理
+                    var errors = JSON.parse(request.responseText)  //浏览器提供的一个对象，js对象
+                    var errObj = errors["errors"]                  //key==errors value==[object Object]
+                    for(var key in errObj){
+                        var value = errObj[key]
+                        $('input[name='+key+']').addClass('error')
+                            .next('.errorMessage').text(value)
+                    }
+                }else{//alert('提交成功！')
+                    var respTxt = JSON.parse(request.responseText)
+                    var successMessage
+                    for(var key in respTxt){
+                        successMessage= respTxt[key]
+                    }
+                    alert("success："+successMessage)
+                }
+            }
+        }
+        request.open('GET','/login?username='+username+'&password='+password);
+        request.send();
+    })
+</script>
